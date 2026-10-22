@@ -2,10 +2,11 @@
 // directamente: usan estas funciones, que además convierten los datos de la API (en inglés y
 // con muchos campos) a objetos simples en español con solo lo que la interfaz necesita.
 const URL_BASE = 'https://api.artic.edu/api/v1'
-// Las imágenes de https://www.artic.edu/iiif/2 se piden a través de un proxy propio (Vite en
-// desarrollo, api/iiif.js en Vercel): Cloudflare solo las entrega sin desafío anti-bots si el
-// Referer es de artic.edu, y el navegador no permite fijar ese Referer desde la app.
-export const IIIF_PROXY = '/iiif/2'
+// Las imágenes de https://www.artic.edu/iiif/2 se piden a través del proxy de Vite (solo en
+// local): Cloudflare solo las entrega sin desafío anti-bots si el Referer es de artic.edu, y el
+// navegador no permite fijar ese Referer desde la app. En producción la imagen falla y la
+// interfaz muestra «Imagen no disponible».
+const IIIF_PROXY = '/iiif/2'
 
 export const OBRAS_POR_PAGINA = 12
 // La API no permite paginar más allá de los primeros 10.000 resultados.
@@ -28,16 +29,9 @@ async function pedirJson(url, signal) {
   } catch (error) {
     // Una cancelación voluntaria no es un fallo: se propaga tal cual para que el llamador la ignore.
     if (error.name === 'AbortError') throw error
-    // Si la API responde un error del servidor sin cabeceras CORS, el navegador lo reporta como
-    // fallo de red (no como un código HTTP). Se reintenta una vez porque suele ser transitorio.
-    try {
-      respuesta = await fetch(url, OPCIONES_FETCH(signal))
-    } catch (errorReintento) {
-      if (errorReintento.name === 'AbortError') throw errorReintento
-      throw new Error('No se pudo conectar con la API. Revisa tu conexión a internet.', {
-        cause: errorReintento,
-      })
-    }
+    throw new Error('No se pudo conectar con la API. Revisa tu conexión a internet.', {
+      cause: error,
+    })
   }
   // fetch solo falla por problemas de red; los códigos 4xx/5xx hay que revisarlos a mano.
   if (respuesta.status === 404) {

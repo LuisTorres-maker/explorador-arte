@@ -21,14 +21,25 @@ Proyecto de Tecnologías Web · Unidad 2.
 | Listado, búsqueda, filtro y paginación | `GET /artworks/search?q={texto}&page={n}&limit=12&fields=...` con filtros `query[bool][filter]` (obras con imagen y `artwork_type_id`) |
 | Opciones del filtro "Tipo de obra" | `GET /artwork-types?limit=100` (con `fields` la API responde 500) |
 | Detalle de una obra | `GET /artworks/{id}` |
-| Imágenes (servicio IIIF) | `https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg`, pedidas a través del proxy `/iiif` (ver abajo) |
+| Imágenes (servicio IIIF) | `https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg`, pedidas a través del proxy `/iiif` de Vite (ver abajo) |
+
+### Imágenes: por qué solo se ven en local
 
 Cloudflare, delante de los servidores del museo, responde a las imágenes IIIF con un desafío
-anti-bots (403) salvo que el `Referer` sea de `artic.edu`, y el navegador no deja fijar ese
-`Referer` desde la app. Por eso la app pide las imágenes a `/iiif/...` en su propio dominio:
-en desarrollo y en `npm run preview` las reenvía el proxy de `vite.config.js`, y en Vercel la
-función `api/iiif.js`. A la API (`api.artic.edu`) se le pide sin `Referer`, porque con
-`Referer: http://localhost:5173/` también responde 403.
+anti-bots (403) salvo que la petición lleve un `Referer` de `artic.edu`, y el navegador no deja
+fijar ese `Referer` desde la app. Por eso, al ejecutar la app en local (`npm run dev` o
+`npm run preview`), las imágenes se piden a `/iiif/...` y el proxy de `vite.config.js` las
+reenvía al museo con ese `Referer`.
+
+En la versión publicada en Vercel no hay forma de obtenerlas: se probó un proxy como función de
+Vercel y otro como Cloudflare Worker, y el museo bloquea ambos (rechaza las peticiones que salen
+de servidores, aunque lleven el `Referer` correcto). En producción, cada tarjeta y el detalle
+muestran «Imagen no disponible»; el resto de la aplicación (listado, búsqueda, filtro,
+paginación, detalle, favoritos y registro) funciona igual. Las capturas de pantalla de este
+README se tomaron en local, con las imágenes visibles.
+
+A la API (`api.artic.edu`) se le pide sin `Referer`, porque con `Referer: http://localhost:5173/`
+también responde 403.
 
 La API limita a 60 peticiones por minuto, por eso el buscador consulta al enviar el formulario
 (botón **Buscar**) y no con cada tecla. Además, la API no permite pasar de 10.000 resultados por
@@ -86,11 +97,9 @@ Otros scripts: `npm run build` (compila a `dist/`), `npm run preview` (sirve la 
 
 ## Despliegue
 
-- **Vercel:** importar el repositorio; el archivo `vercel.json` envía `/iiif/...` a la función
-  `api/iiif.js` (proxy de imágenes) y el resto de rutas a `index.html`, así que recargar
-  `/detalle/:id` no da error 404.
-- **Netlify:** build `npm run build`, carpeta `dist`; el archivo `public/_redirects` redirige las
-  rutas a `index.html`, pero no incluye el proxy de imágenes, así que allí no se verían.
+- **Vercel:** importar el repositorio; el archivo `vercel.json` redirige todas las rutas a
+  `index.html`, así que recargar `/detalle/:id` no da error 404. Las imágenes no se ven en
+  producción (ver [Imágenes: por qué solo se ven en local](#imágenes-por-qué-solo-se-ven-en-local)).
 
 ## Capturas de pantalla
 

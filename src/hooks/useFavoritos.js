@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
-import { IIIF_PROXY } from '../services/artApi'
 
 const CLAVE_STORAGE = 'galeria-abierta:favoritos'
-const IIIF_DIRECTO = 'https://www.artic.edu/iiif/2'
 
 // Lee los favoritos de localStorage. Se usa como inicializador "perezoso" de useState, así que
 // solo se ejecuta una vez, al montar la aplicación. Si el JSON está dañado o el navegador
@@ -10,12 +8,7 @@ const IIIF_DIRECTO = 'https://www.artic.edu/iiif/2'
 function leerFavoritosGuardados() {
   try {
     const guardados = localStorage.getItem(CLAVE_STORAGE)
-    if (!guardados) return []
-    // Los favoritos guardados antes del proxy tienen la URL directa, que Cloudflare bloquea.
-    return JSON.parse(guardados).map((obra) => ({
-      ...obra,
-      imagen: obra.imagen?.replace(IIIF_DIRECTO, IIIF_PROXY) ?? obra.imagen,
-    }))
+    return guardados ? JSON.parse(guardados) : []
   } catch {
     return []
   }

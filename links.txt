@@ -1,2 +1,2 @@
-https://github.com/LuisTorres-maker/explorador-arte.git
+https://github.com/LuisTorres-maker/explorador-arte
 https://explorador-arte.vercel.app

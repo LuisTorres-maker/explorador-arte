@@ -2,7 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // Cloudflare responde a las imágenes IIIF del museo con un desafío anti-bots salvo que el
-// Referer sea de artic.edu, así que se sirven a través de este proxy (ver api/iiif.js para Vercel).
+// Referer sea de artic.edu, así que en local se sirven a través de este proxy. En Vercel no hay
+// proxy: el museo bloquea las peticiones que salen de servidores (ver README).
 const proxy = {
   '/iiif': {
     target: 'https://www.artic.edu',
