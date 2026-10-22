@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/iiif/:ruta*", "destination": "/api/iiif?ruta=:ruta*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
